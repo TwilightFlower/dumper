@@ -1,0 +1,29 @@
+plugins {
+    id 'application'
+    id 'eclipse'
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 9;
+targetCompatibility = 9;
+
+dependencies {
+}
+
+application {
+    mainClass = 'io.github.nuclearfarts.dumper.Main'
+}
+
+jar {
+	manifest {
+		attributes (
+			"Main-Class": application.mainClass,
+			"Agent-Class": "io.github.nuclearfarts.dumper.agent.Agent",
+			"Can-Redefine-Classes": "true",
+			"Can-Retransform-Classes": "true"
+		)
+	}
+}
