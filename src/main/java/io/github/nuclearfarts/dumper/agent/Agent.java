@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.nio.Buffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
@@ -23,8 +24,8 @@ public class Agent implements ClassFileTransformer {
 	private String currentClassToDump;
 	
 	public static void agentmain(String args, Instrumentation inst) {
-		System.out.println("[ClassDumper] Agent attached. Using comm file path: " + args);
-		Path commFile = Path.of(args);
+		System.out.println("[ClassDumper] Agent attached! Using comm file path: " + args);
+		Path commFile = Paths.get(args);
 		Agent agent = new Agent(commFile, inst);
 		inst.addTransformer(agent, true);
 		Thread t = new Thread(() -> {
@@ -53,7 +54,7 @@ public class Agent implements ClassFileTransformer {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) { }
 		}
-		commBuf.rewind();
+		((Buffer) commBuf).rewind(); // get it to not crash on java 8
 		commBuf.get();
 		int classNameLen = commBuf.getInt();
 		byte[] strBytes = new byte[classNameLen];

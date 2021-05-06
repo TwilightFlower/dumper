@@ -33,10 +33,15 @@ public class AgentConnection {
 			FileChannel channel = FileChannel.open(commFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.READ, StandardOpenOption.WRITE);
 			commBuf = channel.map(MapMode.READ_WRITE, 0, 2048);
 			System.out.println("Attempting attach to " + process.pid);
-			VirtualMachine vm = VirtualMachine.attach(Long.toString(process.pid));
-			vm.loadAgent(AGENT_PATH, commFileLoc);
+			try {
+				VirtualMachine vm = VirtualMachine.attach(Long.toString(process.pid));
+				vm.loadAgent(AGENT_PATH, commFileLoc);
+			} catch(AttachNotSupportedException | AgentLoadException | AgentInitializationException e) {
+				System.err.println("Error encountered attaching agent. It's probably fine.");
+				e.printStackTrace();
+			}
 			System.out.println("Attached.");
-		} catch (IOException | AttachNotSupportedException | AgentLoadException | AgentInitializationException e) {
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}

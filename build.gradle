@@ -7,8 +7,8 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 9;
-targetCompatibility = 9;
+sourceCompatibility = 1.8;
+targetCompatibility = 1.8;
 
 dependencies {
 }

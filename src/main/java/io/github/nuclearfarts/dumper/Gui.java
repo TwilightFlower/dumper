@@ -35,12 +35,16 @@ public class Gui {
 			JvmProcess attached = tableModel.getJvm(jvmTable.getSelectedRow());
 			if(attached != null) {
 				workerThread.submit(() -> {
-					AgentConnection conn = AgentConnection.get(attached);
-					conn.askDump(dumpClass, Paths.get(dumpLoc).toAbsolutePath().toString());
 					try {
-						conn.awaitDump();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
+						AgentConnection conn = AgentConnection.get(attached);
+						conn.askDump(dumpClass, Paths.get(dumpLoc).toAbsolutePath().toString());
+						try {
+							conn.awaitDump();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					} catch(Throwable t) {
+						t.printStackTrace();
 					}
 				});
 			}

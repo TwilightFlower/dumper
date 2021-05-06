@@ -15,34 +15,37 @@ public class JvmProcess implements Comparable<JvmProcess> {
 	public static List<JvmProcess> getRunningJvms() {
 		List<JvmProcess> procs = ProcessHandle.allProcesses().filter(p -> {
 			ProcessHandle.Info info = p.info();
-			if(info.command().isPresent() && info.arguments().isPresent()) {
+			System.out.println(info.command().orElse(null) + " " + p.pid());
+			if(info.command().isPresent()) {
 				String cmd = info.command().get();
 				return cmd.endsWith("java") || cmd.endsWith("javaw") || cmd.endsWith("java.exe") || cmd.endsWith("javaw.exe");
 			}
 			return false;
 		}).map(p -> {
 			ProcessHandle.Info info = p.info();
-			String[] args = info.arguments().get();
 			String target = "";
-			boolean nextArgIsJar = false;
-			int cpCounter = -1;
 			// find target
-			for(String arg : args) {
-				if(arg.startsWith("-X") || arg.startsWith("-D")) {
-					continue;
-				}
-				cpCounter--;
-				if(nextArgIsJar) {
-					target = arg;
-					nextArgIsJar = false;
-					break;
-				} else if(cpCounter == 0) {
-					target = arg;
-					break;
-				} else if("-jar".equals(arg)) {
-					nextArgIsJar = true;
-				} else if("-cp".equals(arg) || "-classpath".equals(arg)) {
-					cpCounter = 2;
+			if(info.arguments().isPresent()) {
+				boolean nextArgIsJar = false;
+				int cpCounter = -1;
+				String[] args = info.arguments().get();
+				for(String arg : args) {
+					if(arg.startsWith("-X") || arg.startsWith("-D")) {
+						continue;
+					}
+					cpCounter--;
+					if(nextArgIsJar) {
+						target = arg;
+						nextArgIsJar = false;
+						break;
+					} else if(cpCounter == 0) {
+						target = arg;
+						break;
+					} else if("-jar".equals(arg)) {
+						nextArgIsJar = true;
+					} else if("-cp".equals(arg) || "-classpath".equals(arg)) {
+						cpCounter = 2;
+					}
 				}
 			}
 			return new JvmProcess(p.pid(), target);
